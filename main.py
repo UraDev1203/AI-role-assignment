@@ -4,9 +4,12 @@ FastAPI application for SEO article generation.
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import Dict, Any
+import os
 
 from models import ArticleRequest, ArticleResponse, JobStatusResponse, JobStatus
 from database import init_db, get_db
@@ -28,6 +31,20 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify actual origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files directory
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 async def generate_article_task(
@@ -153,11 +170,15 @@ async def generate_article_task(
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
+    """Root endpoint - serves the UI."""
+    static_file = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    if os.path.exists(static_file):
+        return FileResponse(static_file)
     return {
         "message": "SEO Article Generation API",
         "version": "1.0.0",
         "endpoints": {
+            "GET /": "UI interface",
             "POST /generate": "Generate a new article",
             "GET /jobs/{job_id}": "Get job status",
             "GET /jobs/{job_id}/result": "Get article result"

@@ -35,6 +35,8 @@ The system is built with:
 ├── article_generator.py    # Article generation agent
 ├── job_service.py          # Job management service
 ├── requirements.txt        # Python dependencies
+├── static/                 # Static files (web UI)
+│   └── index.html         # Web interface
 ├── tests/                  # Test files
 └── README.md              # This file
 ```
@@ -79,6 +81,21 @@ python main.py
 ```
 
 The API will be available at `http://localhost:8000`
+
+## Web UI
+
+A simple web interface is included! Once the server is running, open your browser and navigate to:
+
+**http://localhost:8000**
+
+The UI allows you to:
+- Enter topic/keyword
+- Set target word count
+- Select language (EN or FR)
+- View real-time generation status
+- See the complete generated article with all SEO metadata
+
+The interface automatically polls the API to show progress and displays the full result when generation is complete.
 
 ## API Documentation
 

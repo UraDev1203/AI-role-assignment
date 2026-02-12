@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Article Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status-section.active {
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-running {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status-completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-failed {
+            background: #dc3545;
+            color: white;
+        }
+
+        .progress-info {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .result-meta {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .result-meta-item {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .result-meta-item strong {
+            color: #333;
+        }
+
+        .result-content {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .result-content h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .result-content p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .keyword-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .links-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .links-list li {
+            padding: 8px;
+            background: white;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .api-url-input {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 6px;
+        }
+
+        .api-url-input label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .api-url-input input {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 SEO Article Generator</h1>
+        <p class="subtitle">Generate SEO-optimized articles powered by AI</p>
+
+        <div class="api-url-input">
+            <label for="apiUrl">API Base URL:</label>
+            <input type="text" id="apiUrl" value="http://localhost:8000" placeholder="http://localhost:8000">
+        </div>
+
+        <form id="articleForm">
+            <div class="form-group">
+                <label for="topic">Topic / Primary Keyword:</label>
+                <input type="text" id="topic" name="topic" required 
+                       placeholder="e.g., best productivity tools for remote teams">
+            </div>
+
+            <div class="form-group">
+                <label for="targetWordCount">Target Word Count:</label>
+                <input type="number" id="targetWordCount" name="target_word_count" 
+                       min="500" max="5000" value="1500" required>
+            </div>
+
+            <div class="form-group">
+                <label for="language">Language:</label>
+                <select id="language" name="language" required>
+                    <option value="en">English (EN)</option>
+                    <option value="fr">French (FR)</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submitBtn">Generate Article</button>
+        </form>
+
+        <div class="status-section" id="statusSection">
+            <div>
+                <span class="status-badge" id="statusBadge">Pending</span>
+                <div class="progress-info" id="progressInfo"></div>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-title">Generated Article</div>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('articleForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusSection = document.getElementById('statusSection');
+        const statusBadge = document.getElementById('statusBadge');
+        const progressInfo = document.getElementById('progressInfo');
+        const resultSection = document.getElementById('resultSection');
+        const resultContent = document.getElementById('resultContent');
+        const apiUrlInput = document.getElementById('apiUrl');
+
+        let pollInterval = null;
+        let currentJobId = null;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const apiBaseUrl = apiUrlInput.value.trim() || 'http://localhost:8000';
+            const topic = document.getElementById('topic').value;
+            const targetWordCount = parseInt(document.getElementById('targetWordCount').value);
+            const language = document.getElementById('language').value;
+
+            // Reset UI
+            resultSection.classList.remove('active');
+            statusSection.classList.add('active');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Generating... <span class="loading-spinner"></span>';
+
+            try {
+                // Start article generation
+                const response = await fetch(`${apiBaseUrl}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        topic: topic,
+                        target_word_count: targetWordCount,
+                        language: language
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentJobId = data.job_id;
+
+                // Start polling for status
+                pollJobStatus(apiBaseUrl, currentJobId);
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Generate Article';
+            }
+        });
+
+        async function pollJobStatus(apiBaseUrl, jobId) {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+
+            const checkStatus = async () => {
+                try {
+                    const response = await fetch(`${apiBaseUrl}/jobs/${jobId}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const statusData = await response.json();
+                    updateStatus(statusData);
+
+                    if (statusData.status === 'completed') {
+                        clearInterval(pollInterval);
+                        fetchResult(apiBaseUrl, jobId);
+                    } else if (statusData.status === 'failed') {
+                        clearInterval(pollInterval);
+                        showError(statusData.error_message || 'Article generation failed');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Generate Article';
+                    }
+                } catch (error) {
+                    clearInterval(pollInterval);
+                    showError(`Error checking status: ${error.message}`);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Generate Article';
+                }
+            };
+
+            // Check immediately
+            await checkStatus();
+
+            // Then poll every 2 seconds
+            pollInterval = setInterval(checkStatus, 2000);
+        }
+
+        function updateStatus(statusData) {
+            const status = statusData.status;
+            statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            statusBadge.className = `status-badge status-${status}`;
+
+            let progressText = '';
+            if (statusData.progress) {
+                const progress = statusData.progress;
+                if (progress.stage) {
+                    progressText = `Stage: ${progress.stage.replace('_', ' ')}`;
+                }
+                if (progress.word_count) {
+                    progressText += ` | Words: ${progress.word_count}`;
+                }
+                if (progress.seo_score !== undefined) {
+                    progressText += ` | SEO Score: ${progress.seo_score}/100`;
+                }
+            }
+
+            progressInfo.textContent = progressText || `Created at: ${new Date(statusData.created_at).toLocaleString()}`;
+        }
+
+        async function fetchResult(apiBaseUrl, jobId) {
+            try {
+                const response = await fetch(`${apiBaseUrl}/jobs/${jobId}/result`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                displayResult(result);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Generate Article';
+            } catch (error) {
+                showError(`Error fetching result: ${error.message}`);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Generate Article';
+            }
+        }
+
+        function displayResult(result) {
+            resultSection.classList.add('active');
+            
+            let html = '';
+
+            if (result.content) {
+                const content = result.content;
+                
+                html += `
+                    <div class="result-meta">
+                        <div class="result-meta-item">
+                            <strong>Topic:</strong> ${result.topic}
+                        </div>
+                        <div class="result-meta-item">
+                            <strong>Word Count:</strong> ${result.word_count}
+                        </div>
+                        <div class="result-meta-item">
+                            <strong>Meta Title:</strong> ${content.meta_title}
+                        </div>
+                        <div class="result-meta-item">
+                            <strong>Meta Description:</strong> ${content.meta_description}
+                        </div>
+                    </div>
+
+                    <div class="result-content">
+                        <h2>${content.title}</h2>
+                        <p><strong>Introduction:</strong></p>
+                        <p>${content.introduction}</p>
+                `;
+
+                // Display headings and content
+                if (content.headings && content.headings.length > 0) {
+                    content.headings.forEach(heading => {
+                        const level = heading.level || 2;
+                        const tag = `h${level}`;
+                        html += `<${tag}>${heading.text}</${tag}>`;
+                        if (heading.content) {
+                            html += `<p>${heading.content}</p>`;
+                        }
+                    });
+                }
+
+                // Display body if available
+                if (content.body) {
+                    html += `<p>${content.body}</p>`;
+                }
+
+                html += `
+                        <p><strong>Conclusion:</strong></p>
+                        <p>${content.conclusion}</p>
+                    </div>
+                `;
+            }
+
+            // Display keyword analysis
+            if (result.keyword_analysis) {
+                const ka = result.keyword_analysis;
+                html += `
+                    <div class="result-content">
+                        <h3>Keyword Analysis</h3>
+                        <p><strong>Primary Keyword:</strong> ${ka.primary_keyword}</p>
+                        <p><strong>Secondary Keywords:</strong></p>
+                        <div class="keywords">
+                            ${ka.secondary_keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
+                        </div>
+                        <p style="margin-top: 10px;"><strong>Keyword Density:</strong></p>
+                        <ul class="links-list">
+                            ${Object.entries(ka.keyword_density).map(([kw, density]) => 
+                                `<li>${kw}: ${density}%</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Display internal links
+            if (result.internal_links && result.internal_links.length > 0) {
+                html += `
+                    <div class="result-content">
+                        <h3>Internal Linking Suggestions (${result.internal_links.length})</h3>
+                        <ul class="links-list">
+                            ${result.internal_links.map(link => 
+                                `<li>
+                                    <strong>${link.anchor_text}</strong><br>
+                                    Target: ${link.target_page}<br>
+                                    <small>Context: ${link.context}</small>
+                                </li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Display external references
+            if (result.external_references && result.external_references.length > 0) {
+                html += `
+                    <div class="result-content">
+                        <h3>External References (${result.external_references.length})</h3>
+                        <ul class="links-list">
+                            ${result.external_references.map(ref => 
+                                `<li>
+                                    <strong>${ref.title}</strong><br>
+                                    <a href="${ref.url}" target="_blank">${ref.url}</a><br>
+                                    <small>Context: ${ref.context}</small><br>
+                                    <small>Citation: ${ref.citation_text}</small>
+                                </li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Display FAQ
+            if (result.faq_section && result.faq_section.length > 0) {
+                html += `
+                    <div class="result-content">
+                        <h3>FAQ Section</h3>
+                        ${result.faq_section.map(faq => 
+                            `<div style="margin-bottom: 15px;">
+                                <strong>Q: ${faq.question}</strong><br>
+                                <p>A: ${faq.answer}</p>
+                            </div>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+
+            resultContent.innerHTML = html;
+        }
+
+        function showError(message) {
+            resultContent.innerHTML = `<div class="error-message">${message}</div>`;
+            resultSection.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
